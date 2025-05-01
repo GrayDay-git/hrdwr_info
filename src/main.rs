@@ -52,7 +52,7 @@ fn main()
     if cfg!(target_os = "windows") 
     {
         Command::new("cmd")
-        .args(&["/C", "dir"])
+        .args(&["/K", "hrdwr_info.exe"])
         .spawn()
         .expect("Error execute cmd");
     }
@@ -60,7 +60,7 @@ fn main()
     else if cfg!(target_os = "linux") 
     {
         Command::new("x-terminal-emulator")
-        .args(&["-e", "bash", "-c", "ls; exec bash"])
+        .args(&["-e", "bash", "-c", "./hrdwr_info; exec bash"])
         .spawn()
         .expect("Error execute terminal");
     }
