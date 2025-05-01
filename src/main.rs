@@ -46,23 +46,27 @@ impl SystemInfo {
 // Main function
 fn main() {
 
-    // If executed without arguments, open terminal and run program with "display"
-    if cfg!(target_os = "windows") {
-        Command::new("cmd")
-            .args(&["/K", "hrdwr_info.exe display"])
-            .spawn()
-            .expect("Error executing cmd");
-    } else if cfg!(target_os = "linux") {
-        Command::new("x-terminal-emulator")
-            .args(&["-e", "bash", "-c", "./hrdwr_info display; exec bash"])
-            .spawn()
-            .expect("Error executing terminal");
-    } else {
-        println!("Unknown OS");
-    }
-
     // Get execution arguments
     let args: Vec<String> = std::env::args().collect();
+
+    // If executed without arguments, open terminal and run program with "display"
+    if args.len() == 1 { 
+        //run terminal on Windows.
+        if cfg!(target_os = "windows") {
+            Command::new("cmd")
+                .args(&["/K", "hrdwr_info.exe display"])
+                .spawn()
+                .expect("Error ejecutando cmd");
+        //run terminal on Linux
+        } else if cfg!(target_os = "linux") {
+            Command::new("x-terminal-emulator")
+                .args(&["-e", "bash", "-c", "./hrdwr_info display; exec bash"])
+                .spawn()
+                .expect("Error ejecutando terminal");
+        } else {
+            println!("Unknown OS");
+        }
+    }
 
     // If program is executed with "display", print system info and exit
     if args.contains(&String::from("display")) {
