@@ -1,27 +1,27 @@
-//Module x Component.
+// Module x Component
 mod cpu_info;
-mod memory_info; //RAM
-mod disk_info; //Disks and Partitions
+mod memory_info; // RAM
+mod disk_info;   // Disks and Partitions
 mod gpu_info;
 
-//Dependencies.
+// Dependencies
 use cpu_info::CpuInfo;
 use memory_info::MemoryInfo;
 use disk_info::DiskInfo;
 use gpu_info::GpuInfo;
-use sysinfo::{System,Disks};
+use sysinfo::{System, Disks};
 use std::process::Command;
 
-//receiving module's caracteristics.
+// Structure to store system information
 #[derive(Debug)]
 struct SystemInfo {
     cpu: CpuInfo,
     memory: MemoryInfo,
-    disks: Vec<DiskInfo>
+    disks: Vec<DiskInfo>,
 }
 
 impl SystemInfo {
-    //Initializing modules and characteristics.
+    // Initialize system modules
     fn new(sys: &System, disks: &Disks) -> Self {
         Self {
             cpu: CpuInfo::get(sys),
@@ -30,50 +30,46 @@ impl SystemInfo {
         }
     }
 
-    //Print all the info.
-    fn display(&self) 
-    {
-        println!("CPU: {} | {} Cores | {} MHz", self.cpu.model, self.cpu.cores, self.cpu.frequency); //Cpu printer.
-        println!("RAM: {} MB used of {} MB",  self.memory.used, self.memory.total); //RAM printer.
+    // Print all system information
+    fn display(&self) {
+        println!("CPU: {} | {} Cores | {} MHz", self.cpu.model, self.cpu.cores, self.cpu.frequency);
+        println!("RAM: {} MB used of {} MB", self.memory.used, self.memory.total);
         println!("Disks:");
-        for disk in &self.disks
-        {
-            println!("  📂 {} - Total: {} GB | Free: {} GB", disk.name, disk.total_space, disk.available_space); //disk printer.
+        for disk in &self.disks {
+            println!("  📂 {} - Total: {} GB | Free: {} GB", disk.name, disk.total_space, disk.available_space);
         }
-        let gpu = GpuInfo::get(); //Get GPU info.
-        println!("GPU detected: {}, Driver: {}", gpu.name, gpu.driver); // GPU printer.
+        let gpu = GpuInfo::get();
+        println!("GPU detected: {}, Driver: {}", gpu.name, gpu.driver);
     }
 }
 
-//Here is the begining.
-fn main()
-{
-    //Execute cmd on Windows
-    if cfg!(target_os = "windows") 
-    {
+// Main function
+fn main() {
+
+    // If executed without arguments, open terminal and run program with "display"
+    if cfg!(target_os = "windows") {
         Command::new("cmd")
-        .args(&["/K", "hrdwr_info.exe"])
-        .spawn()
-        .expect("Error execute cmd");
-    }
-    //execute Terminal on Linux
-    else if cfg!(target_os = "linux") 
-    {
+            .args(&["/K", "hrdwr_info.exe display"])
+            .spawn()
+            .expect("Error executing cmd");
+    } else if cfg!(target_os = "linux") {
         Command::new("x-terminal-emulator")
-        .args(&["-e", "bash", "-c", "./hrdwr_info; exec bash"])
-        .spawn()
-        .expect("Error execute terminal");
-    }
-    //Error Management.
-    else 
-    {
+            .args(&["-e", "bash", "-c", "./hrdwr_info display; exec bash"])
+            .spawn()
+            .expect("Error executing terminal");
+    } else {
         println!("Unknown OS");
     }
-    
-    //initialize the analized libraries.
-    let sys = System::new_all();
-    let disks= Disks::new_with_refreshed_list();
-    let system_info = SystemInfo::new(&sys, &disks);
 
-    system_info.display(); // Show hardware info.
+    // Get execution arguments
+    let args: Vec<String> = std::env::args().collect();
+
+    // If program is executed with "display", print system info and exit
+    if args.contains(&String::from("display")) {
+        let sys = System::new_all();
+        let disks = Disks::new_with_refreshed_list();
+        let system_info = SystemInfo::new(&sys, &disks);
+        system_info.display(); // Print system information
+        return; // Exit after printing
+    }
 }
