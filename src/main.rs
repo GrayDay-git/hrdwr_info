@@ -10,6 +10,7 @@ use memory_info::MemoryInfo;
 use disk_info::DiskInfo;
 use gpu_info::GpuInfo;
 use sysinfo::{System,Disks};
+use std::process::Command;
 
 //receiving module's caracteristics.
 #[derive(Debug)]
@@ -47,6 +48,28 @@ impl SystemInfo {
 //Here is the begining.
 fn main()
 {
+    //Execute cmd on Windows
+    if cfg!(target_os = "windows") 
+    {
+        Command::new("cmd")
+        .args(&["/C", "dir"])
+        .spawn()
+        .expect("Error execute cmd");
+    }
+    //execute Terminal on Linux
+    else if cfg!(target_os = "linux") 
+    {
+        Command::new("x-terminal-emulator")
+        .args(&["-e", "bash", "-c", "ls; exec bash"])
+        .spawn()
+        .expect("Error execute terminal");
+    }
+    //Error Management.
+    else 
+    {
+        println!("Unknown OS");
+    }
+    
     //initialize the analized libraries.
     let sys = System::new_all();
     let disks= Disks::new_with_refreshed_list();
